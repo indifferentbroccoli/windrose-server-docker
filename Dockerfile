@@ -12,8 +12,10 @@ RUN dpkg --add-architecture i386 && \
     libicu-dev \
     gettext-base \
     wine \
+    wine32:i386 \
     wine64 \
     xvfb \
+    xauth \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
@@ -48,6 +50,6 @@ RUN mkdir -p /home/steam/server-files && \
 WORKDIR /home/steam/server
 
 HEALTHCHECK --start-period=5m \
-            CMD pgrep -f "WindroseServer" > /dev/null || exit 1
+            CMD pgrep "wine" > /dev/null || exit 1
 
 ENTRYPOINT ["/home/steam/server/init.sh"]

@@ -8,17 +8,27 @@ cd "$SERVER_FILES" || exit
 
 LogAction "Starting Windrose Dedicated Server"
 
-EXEC="$SERVER_FILES/WindroseServer.exe"
+SERVER_EXEC="$SERVER_FILES/R5/Binaries/Win64/WindroseServer-Win64-Shipping.exe"
 
-if [ ! -f "$EXEC" ]; then
-    LogError "Could not find server executable at: $EXEC"
+if [ ! -f "$SERVER_EXEC" ]; then
+    LogError "Could not find server executable at: $SERVER_EXEC"
+    LogError "Directory contents:"
+    ls -laR "$SERVER_FILES/"
     exit 1
 fi
 
-export WINEPREFIX="${HOME}/.wine"
-export WINEARCH=win64
-export WINEDEBUG=-all
+export WINEPREFIX="${WINEPREFIX:-$HOME/.wine}"
+export WINEARCH="${WINEARCH:-win64}"
+export WINEDEBUG="${WINEDEBUG:-fixme-all}"
+
+# Bootstrap Wine if not already initialized
+if [ ! -f "$WINEPREFIX/system.reg" ]; then
+    LogInfo "Initializing Wine prefix..."
+    winecfg -v win10 >/dev/null 2>&1
+    wineboot --init >/dev/null 2>&1
+    LogInfo "Wine initialized: $(wine --version)"
+fi
 
 LogInfo "Server is starting..."
 
-exec wine "$EXEC" -log
+exec xvfb-run --auto-servernum wine "$SERVER_EXEC" -log -STDOUT

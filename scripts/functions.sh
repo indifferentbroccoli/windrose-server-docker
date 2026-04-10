@@ -61,7 +61,7 @@ shutdown_server() {
   LogAction "Attempting graceful server shutdown"
 
   local pid
-  pid=$(pgrep -f "WindroseServer.exe")
+  pid=$(pidof wine-preloader)
 
   if [ -n "$pid" ]; then
     kill -SIGTERM "$pid"
