@@ -8,6 +8,28 @@ cd "$SERVER_FILES" || exit
 
 LogAction "Starting Windrose Dedicated Server"
 
+SERVER_DESC="$SERVER_FILES/R5/ServerDescription.json"
+PATCH=$(jq \
+    --arg proxy      "0.0.0.0" \
+    --arg invite     "${INVITE_CODE}" \
+    --arg note       "${SERVER_NOTE}" \
+    --arg password   "${SERVER_PASSWORD:-}" \
+    --argjson maxplayers "${MAX_PLAYERS:-10}" \
+    '
+    .ServerDescription_Persistent.P2pProxyAddress = $proxy |
+    if $invite   != "" then .ServerDescription_Persistent.InviteCode           = $invite   else . end |
+    if $note     != "" then .ServerDescription_Persistent.Note                 = $note     else . end |
+    if $password != "" then
+        .ServerDescription_Persistent.IsPasswordProtected = true |
+        .ServerDescription_Persistent.Password = $password
+    else
+        .ServerDescription_Persistent.IsPasswordProtected = false
+    end |
+    .ServerDescription_Persistent.MaxPlayerCount = $maxplayers
+    ' "$SERVER_DESC")
+echo "$PATCH" > "$SERVER_DESC"
+LogInfo "Server config patched"
+
 SERVER_EXEC="$SERVER_FILES/R5/Binaries/Win64/WindroseServer-Win64-Shipping.exe"
 
 if [ ! -f "$SERVER_EXEC" ]; then

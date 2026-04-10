@@ -16,6 +16,7 @@ RUN dpkg --add-architecture i386 && \
     wine64 \
     xvfb \
     xauth \
+    jq \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
