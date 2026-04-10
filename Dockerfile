@@ -3,13 +3,17 @@ FROM --platform=linux/amd64 debian:bookworm-slim
 
 ENV DEBIAN_FRONTEND=noninteractive
 
-RUN apt-get update && apt-get install -y --no-install-recommends \
+RUN dpkg --add-architecture i386 && \
+    apt-get update && apt-get install -y --no-install-recommends \
     curl \
     ca-certificates \
     unzip \
     procps \
     libicu-dev \
     gettext-base \
+    wine \
+    wine64 \
+    xvfb \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
@@ -44,6 +48,6 @@ RUN mkdir -p /home/steam/server-files && \
 WORKDIR /home/steam/server
 
 HEALTHCHECK --start-period=5m \
-            CMD pgrep -f "WindroseServer-Linux-Shipping" > /dev/null || exit 1
+            CMD pgrep -f "WindroseServer" > /dev/null || exit 1
 
 ENTRYPOINT ["/home/steam/server/init.sh"]

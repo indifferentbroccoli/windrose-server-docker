@@ -61,7 +61,7 @@ shutdown_server() {
   LogAction "Attempting graceful server shutdown"
 
   local pid
-  pid=$(pgrep -f "WindroseServer-Linux-Shipping")
+  pid=$(pgrep -f "WindroseServer.exe")
 
   if [ -n "$pid" ]; then
     kill -SIGTERM "$pid"

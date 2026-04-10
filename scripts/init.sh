@@ -27,7 +27,7 @@ chown -R steam:steam /home/steam/server-files
 # shellcheck disable=SC2317
 term_handler() {
     if ! shutdown_server; then
-        kill -SIGTERM "$(pgrep -f WindroseServer-Linux-Shipping)"
+        kill -SIGTERM "$(pgrep -f WindroseServer.exe)"
     fi
     tail --pid="$killpid" -f 2>/dev/null
 }
