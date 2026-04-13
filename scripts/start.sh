@@ -9,25 +9,6 @@ cd "$SERVER_FILES" || exit
 LogAction "Starting Windrose Dedicated Server"
 
 SERVER_DESC="$SERVER_FILES/R5/ServerDescription.json"
-tr -d '\r' < "$SERVER_DESC" | jq \
-    --arg proxy      "0.0.0.0" \
-    --arg invite     "${INVITE_CODE}" \
-    --arg name       "${SERVER_NAME}" \
-    --arg password   "${SERVER_PASSWORD:-}" \
-    --argjson maxplayers "${MAX_PLAYERS:-10}" \
-    '
-    .ServerDescription_Persistent.P2pProxyAddress = $proxy |
-    if $invite   != "" then .ServerDescription_Persistent.InviteCode           = $invite   else . end |
-    if $name     != "" then .ServerDescription_Persistent.ServerName           = $name     else . end |
-    if $password != "" then
-        .ServerDescription_Persistent.IsPasswordProtected = true |
-        .ServerDescription_Persistent.Password = $password
-    else
-        .ServerDescription_Persistent.IsPasswordProtected = false
-    end |
-    .ServerDescription_Persistent.MaxPlayerCount = $maxplayers
-    ' > "${SERVER_DESC}.tmp" && mv "${SERVER_DESC}.tmp" "$SERVER_DESC"
-LogInfo "Server config patched"
 
 SERVER_EXEC="$SERVER_FILES/R5/Binaries/Win64/WindroseServer-Win64-Shipping.exe"
 
@@ -51,7 +32,9 @@ fi
 
 # First run: start server briefly to generate ServerDescription.json
 if [ ! -f "$SERVER_DESC" ]; then
-    LogInfo "First run detected, starting server to generate config files..."
+    LogAction "First boot detected - ServerDescription.json not found"
+    LogInfo "Starting server temporarily to generate default config files..."
+
     xvfb-run --auto-servernum wine "$SERVER_EXEC" -log -STDOUT >/dev/null 2>&1 &
     firstrun_pid=$!
 
@@ -61,11 +44,42 @@ if [ ! -f "$SERVER_DESC" ]; then
         count=$((count + 1))
     done
 
+    if [ ! -f "$SERVER_DESC" ]; then
+        LogError "ServerDescription.json was not generated after ${count}s - server may have failed to start"
+        LogError "Killing temporary process and exiting"
+        kill "$firstrun_pid" 2>/dev/null
+        wait "$firstrun_pid" 2>/dev/null
+        wineserver -k 2>/dev/null
+        exit 1
+    fi
+
+    LogSuccess "ServerDescription.json generated!"
     kill "$firstrun_pid" 2>/dev/null
     wait "$firstrun_pid" 2>/dev/null
     wineserver -k 2>/dev/null
     sleep 2
 fi
+
+LogAction "Patching server config"
+tr -d '\r' < "$SERVER_DESC" | jq \
+    --arg proxy      "0.0.0.0" \
+    --arg invite     "${INVITE_CODE}" \
+    --arg name       "${SERVER_NAME}" \
+    --arg password   "${SERVER_PASSWORD:-}" \
+    --argjson maxplayers "${MAX_PLAYERS:-10}" \
+    '
+    .ServerDescription_Persistent.P2pProxyAddress = $proxy |
+    if $invite   != "" then .ServerDescription_Persistent.InviteCode           = $invite   else . end |
+    if $name     != "" then .ServerDescription_Persistent.ServerName           = $name     else . end |
+    if $password != "" then
+        .ServerDescription_Persistent.IsPasswordProtected = true |
+        .ServerDescription_Persistent.Password = $password
+    else
+        .ServerDescription_Persistent.IsPasswordProtected = false
+    end |
+    .ServerDescription_Persistent.MaxPlayerCount = $maxplayers
+    ' > "${SERVER_DESC}.tmp" && mv "${SERVER_DESC}.tmp" "$SERVER_DESC"
+LogSuccess "Server config patched"
 
 LogInfo "Server is starting..."
 
