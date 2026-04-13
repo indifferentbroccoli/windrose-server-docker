@@ -45,9 +45,26 @@ export WINEDEBUG="${WINEDEBUG:-fixme-all}"
 # Bootstrap Wine if not already initialized
 if [ ! -f "$WINEPREFIX/system.reg" ]; then
     LogInfo "Initializing Wine prefix..."
-    winecfg -v win10 >/dev/null 2>&1
-    wineboot --init >/dev/null 2>&1
+    xvfb-run --auto-servernum bash -c "winecfg -v win10 >/dev/null 2>&1; wineboot --init >/dev/null 2>&1"
     LogInfo "Wine initialized: $(wine --version)"
+fi
+
+# First run: start server briefly to generate ServerDescription.json
+if [ ! -f "$SERVER_DESC" ]; then
+    LogInfo "First run detected, starting server to generate config files..."
+    xvfb-run --auto-servernum wine "$SERVER_EXEC" -log -STDOUT >/dev/null 2>&1 &
+    firstrun_pid=$!
+
+    count=0
+    while [ ! -f "$SERVER_DESC" ] && [ $count -lt 120 ]; do
+        sleep 1
+        count=$((count + 1))
+    done
+
+    kill "$firstrun_pid" 2>/dev/null
+    wait "$firstrun_pid" 2>/dev/null
+    wineserver -k 2>/dev/null
+    sleep 2
 fi
 
 LogInfo "Server is starting..."

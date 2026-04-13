@@ -27,7 +27,11 @@ chown -R steam:steam /home/steam/server-files
 # shellcheck disable=SC2317
 term_handler() {
     if ! shutdown_server; then
-        kill -SIGTERM "$(pidof wine-preloader)"
+        local pid
+        pid=$(pidof wine-preloader)
+        if [ -n "$pid" ]; then
+            kill -SIGTERM "$pid"
+        fi
     fi
     tail --pid="$killpid" -f 2>/dev/null
 }
