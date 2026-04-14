@@ -68,6 +68,7 @@ docker run -d \
 | `SERVER_PASSWORD` | | Leave empty for a public server |
 | `MAX_PLAYERS` | `10` | Maximum number of simultaneous players |
 | `P2P_PROXY_ADDRESS` | `127.0.0.1` | IP address the P2P proxy binds to. Use `127.0.0.1` (default) in Docker — the proxy is an internal socket and does not need to be reachable from outside the container |
+| `EXPLICIT_LOCAL_ADDRESS` | | LAN/public IP to advertise as the ICE host candidate. Set this to your host machine's LAN IP (e.g. `192.168.1.100`) when LAN players cannot connect — Docker's bridge network causes the server to advertise an unreachable internal IP (`192.168.80.x`) by default. Leave unset for remote-only or relay-based setups. |
 | `GENERATE_SETTINGS` | `true` | Set to `false` to skip all config generation and patching. The server will start using whatever is already in `ServerDescription.json` on disk or create a new one. |
 
 ## Server Configuration
@@ -91,6 +92,7 @@ Located at `server-files/R5/ServerDescription.json`. This file can only be edite
 | `WorldIslandId` | ID of the world to load — must match the folder name of a `WorldDescription.json` |
 | `MaxPlayerCount` | Maximum simultaneous players |
 | `P2pProxyAddress` | IP for listening sockets. Use `127.0.0.1` (default) — the proxy is an internal socket |
+| `ExplicitLocalAddress` | ICE host candidate IP advertised to connecting clients. Set to your host's LAN IP to fix LAN connectivity when running behind Docker bridge networking |
 
 ```json
 {

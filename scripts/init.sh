@@ -46,6 +46,7 @@ su - steam -c "cd /home/steam/server && \
     SERVER_PASSWORD='${SERVER_PASSWORD}' \
     MAX_PLAYERS='${MAX_PLAYERS:-10}' \
     P2P_PROXY_ADDRESS='${P2P_PROXY_ADDRESS:-}' \
+    EXPLICIT_LOCAL_ADDRESS='${EXPLICIT_LOCAL_ADDRESS:-}' \
     GENERATE_SETTINGS='${GENERATE_SETTINGS:-true}' \
     ./start.sh" &
 

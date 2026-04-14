@@ -66,12 +66,14 @@ if [ "${GENERATE_SETTINGS:-true}" != "false" ]; then
     LogAction "Patching server config"
     tr -d '\r' < "$SERVER_DESC" | jq \
         --arg proxy      "${P2P_PROXY_ADDRESS:-127.0.0.1}" \
+        --arg explicitaddr "${EXPLICIT_LOCAL_ADDRESS:-}" \
         --arg invite     "${INVITE_CODE}" \
         --arg name       "${SERVER_NAME}" \
         --arg password   "${SERVER_PASSWORD:-}" \
         --argjson maxplayers "${MAX_PLAYERS:-10}" \
         '
         .ServerDescription_Persistent.P2pProxyAddress = $proxy |
+        if $explicitaddr != "" then .ServerDescription_Persistent.ExplicitLocalAddress = $explicitaddr else . end |
         if $invite   != "" then .ServerDescription_Persistent.InviteCode           = $invite   else . end |
         if $name     != "" then .ServerDescription_Persistent.ServerName           = $name     else . end |
         if $password != "" then
