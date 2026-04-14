@@ -31,7 +31,9 @@ if [ ! -f "$WINEPREFIX/system.reg" ]; then
 fi
 
 # First run: start server briefly to generate ServerDescription.json
-if [ ! -f "$SERVER_DESC" ]; then
+if [ "${GENERATE_SETTINGS:-true}" = "false" ]; then
+    LogInfo "GENERATE_SETTINGS=false — skipping first boot detection and config patch"
+elif [ ! -f "$SERVER_DESC" ]; then
     LogAction "First boot detected - ServerDescription.json not found"
     LogInfo "Starting server temporarily to generate default config files..."
 
@@ -60,9 +62,7 @@ if [ ! -f "$SERVER_DESC" ]; then
     sleep 2
 fi
 
-if [ "${GENERATE_SETTINGS:-true}" = "false" ]; then
-    LogInfo "GENERATE_SETTINGS=false — skipping server config patch, using ServerDescription.json as-is"
-else
+if [ "${GENERATE_SETTINGS:-true}" != "false" ]; then
     LogAction "Patching server config"
     tr -d '\r' < "$SERVER_DESC" | jq \
         --arg proxy      "${P2P_PROXY_ADDRESS:-127.0.0.1}" \
