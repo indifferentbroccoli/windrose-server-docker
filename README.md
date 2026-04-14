@@ -67,6 +67,8 @@ docker run -d \
 | `SERVER_NAME` | | Display name for your server |
 | `SERVER_PASSWORD` | | Leave empty for a public server |
 | `MAX_PLAYERS` | `10` | Maximum number of simultaneous players |
+| `P2P_PROXY_ADDRESS` | `127.0.0.1` | IP address the P2P proxy binds to. Use `127.0.0.1` (default) in Docker — the proxy is an internal socket and does not need to be reachable from outside the container |
+| `GENERATE_SETTINGS` | `true` | Set to `false` to skip all config generation and patching. The server will start using whatever is already in `ServerDescription.json` on disk or create a new one. |
 
 ## Server Configuration
 
@@ -88,7 +90,7 @@ Located at `server-files/R5/ServerDescription.json`. This file can only be edite
 | `ServerName` | Display name of the server |
 | `WorldIslandId` | ID of the world to load — must match the folder name of a `WorldDescription.json` |
 | `MaxPlayerCount` | Maximum simultaneous players |
-| `P2pProxyAddress` | IP for listening sockets. Use `0.0.0.0` in Docker to accept connections on all interfaces |
+| `P2pProxyAddress` | IP for listening sockets. Use `127.0.0.1` (default) — the proxy is an internal socket |
 
 ```json
 {
@@ -101,7 +103,7 @@ Located at `server-files/R5/ServerDescription.json`. This file can only be edite
         "ServerName": "My Windrose Server",
         "WorldIslandId": "...",
         "MaxPlayerCount": 10,
-        "P2pProxyAddress": "0.0.0.0"
+        "P2pProxyAddress": "127.0.0.1"
     }
 }
 ```

@@ -78,7 +78,8 @@ if [ "${GENERATE_SETTINGS:-true}" != "false" ]; then
             .ServerDescription_Persistent.IsPasswordProtected = true |
             .ServerDescription_Persistent.Password = $password
         else
-            .ServerDescription_Persistent.IsPasswordProtected = false
+            .ServerDescription_Persistent.IsPasswordProtected = false |
+            .ServerDescription_Persistent.Password = ""
         end |
         .ServerDescription_Persistent.MaxPlayerCount = $maxplayers
         ' > "${SERVER_DESC}.tmp" && mv "${SERVER_DESC}.tmp" "$SERVER_DESC"
