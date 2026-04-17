@@ -39,15 +39,16 @@ term_handler() {
 
 trap 'term_handler' SIGTERM
 
+export INVITE_CODE="${INVITE_CODE:-}"
+export SERVER_NAME="${SERVER_NAME:-}"
+export SERVER_PASSWORD="${SERVER_PASSWORD:-}"
+export MAX_PLAYERS="${MAX_PLAYERS:-10}"
+export P2P_PROXY_ADDRESS="${P2P_PROXY_ADDRESS:-}"
+export GENERATE_SETTINGS="${GENERATE_SETTINGS:-true}"
+
 # Start the server as steam user
-su - steam -c "cd /home/steam/server && \
-    INVITE_CODE='${INVITE_CODE}' \
-    SERVER_NAME='${SERVER_NAME}' \
-    SERVER_PASSWORD='${SERVER_PASSWORD}' \
-    MAX_PLAYERS='${MAX_PLAYERS:-10}' \
-    P2P_PROXY_ADDRESS='${P2P_PROXY_ADDRESS:-}' \
-    GENERATE_SETTINGS='${GENERATE_SETTINGS:-true}' \
-    ./start.sh" &
+su - steam -w "INVITE_CODE,SERVER_NAME,SERVER_PASSWORD,MAX_PLAYERS,P2P_PROXY_ADDRESS,GENERATE_SETTINGS" \
+    -c "cd /home/steam/server && ./start.sh" &
 
 killpid="$!"
 wait "$killpid"

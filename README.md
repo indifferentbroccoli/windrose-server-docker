@@ -78,6 +78,27 @@ On first start the server automatically generates two configuration files inside
 
 Players connect via invite code. The code is set by `INVITE_CODE` in your `.env` and is also visible in `server-files/R5/ServerDescription.json` under `InviteCode`. Share it with players who join via **Play → Connect to Server** in-game.
 
+#### LAN connections
+
+If any players are connecting from the same local network, the default `P2P_PROXY_ADDRESS=127.0.0.1` will not work. You must:
+
+1. Set `P2P_PROXY_ADDRESS` to the server machine's LAN IP address (e.g. `192.168.1.100`)
+2. Add `network_mode: host` to your `docker-compose.yml` service so the container shares the host's network stack
+
+```yaml
+services:
+  windrose:
+    image: indifferentbroccoli/windrose-server-docker
+    restart: unless-stopped
+    container_name: windrose
+    stop_grace_period: 30s
+    network_mode: host
+    env_file:
+      - .env
+    volumes:
+      - ./server-files:/home/steam/server-files
+```
+
 ### ServerDescription.json
 
 Located at `server-files/R5/ServerDescription.json`. This file can only be edited while the server is stopped.
@@ -185,6 +206,12 @@ Located at `server-files/R5/Saved/SaveProfiles/Default/RocksDB/<version>/Worlds/
 | Path | Description |
 |------|-------------|
 | `/home/steam/server-files` | Server installation files, world saves, and configuration |
+
+## Proxmox
+
+If you are hosting this server inside a Proxmox VM or LXC container, set the CPU type to **host**.
+
+Proxmox's default CPU types (e.g. `kvm64`) omit instruction sets that Wine and the server binary may depend on. This can cause the server to fail to start, crash at runtime, or fail silently with no useful output.
 
 ## About
 
