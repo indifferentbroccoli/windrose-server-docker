@@ -6,6 +6,8 @@ services:
     restart: unless-stopped
     container_name: windrose
     stop_grace_period: 30s
+    ports:
+      - '7777:7777/tcp'
     env_file:
       - .env
     volumes:
