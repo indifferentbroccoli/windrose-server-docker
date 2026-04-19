@@ -7,7 +7,7 @@ services:
     container_name: windrose
     stop_grace_period: 30s
     ports:
-      - '7777:7777/tcp'
+      - '7777:7777/udp'
     env_file:
       - .env
     volumes:

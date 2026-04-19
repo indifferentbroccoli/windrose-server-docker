@@ -64,7 +64,9 @@ docker run -d \
 | `PGID` | `1000` | Group ID to run the server process as |
 | `UPDATE_ON_START` | `true` | Download and validate server files on every startup. Set to `false` to skip. |
 | `USE_DIRECT_CONNECTION` | `false` | Set to `true` to connect to your server via IP and port instead of invite code. |
-| `SERVER_PORT` | `7777` | Only applies if `USE_DIRECT_CONNECTION=true`. Set this value to change from the default port, `7777`. |
+| `SERVER_PORT` | `7777` | Only applies if `USE_DIRECT_CONNECTION=true`. Port for direct connection (TCP and UDP). |
+| `DIRECT_CONNECTION_PROXY_ADDRESS` | `0.0.0.0` | Only applies if `USE_DIRECT_CONNECTION=true`. Address for the direct connection proxy. |
+| `USER_SELECTED_REGION` | `EU` | Region for the connection service. Options: `SEA`, `CIS`, `EU` |
 | `INVITE_CODE` | | Invite code players use to connect if `USE_DIRECT_CONNECTION=false` (default). Min 6 characters, `0-9 a-z A-Z`, case sensitive |
 | `SERVER_NAME` | | Display name for your server |
 | `SERVER_PASSWORD` | | Leave empty for a public server |
@@ -92,8 +94,6 @@ The code is set by `INVITE_CODE` in the `.env` file or `InviteCode` in `ServerDe
 #### IP Address
 
 This is enabled by `USE_DIRECT_CONNECTION=true` in the `.env` file or `UseDirectConnection` in `ServerDescription.json`.
-
-The default port is `7777`. To use a different port, set `SERVER_PORT` in the `.env` file or `DirectConnectionServerPort` in `ServerDescription.json`.
 
 #### LAN connections
 
@@ -123,8 +123,11 @@ Located at `server-files/R5/ServerDescription.json`. This file can only be edite
 | Field | Description |
 |-------|-------------|
 | `InviteCode` | Invite code for players to find your server. Min 6 chars, `0-9 a-z A-Z`, case sensitive |
-| `UseDirectConnection` | `true` if using direct connection via IP, or `false` if using invite code |
-| `DirectConnectionServerPort` | Port when direct connection is enabled. Default is `7777` |
+| `UseDirectConnection` | `true` if using direct connection via IP, or `false` (default) if using invite code |
+| `DirectConnectionServerPort` | Port when direct connection is enabled. Default is `7777` (UDP) |
+| `DirectConnectionServerAddress` | Technical field — should not be changed |
+| `DirectConnectionProxyAddress` | Address for the direct connection proxy. Default is `0.0.0.0` |
+| `UserSelectedRegion` | Region for the connection service. Default is `EU`. Options: `SEA`, `CIS`, `EU` |
 | `IsPasswordProtected` | `true` or `false` |
 | `Password` | Server password |
 | `ServerName` | Display name of the server |
@@ -138,14 +141,17 @@ Located at `server-files/R5/ServerDescription.json`. This file can only be edite
     "ServerDescription_Persistent": {
         "PersistentServerId": "...",
         "InviteCode": "myfriends",
-        "UseDirectConnection": false,
-        "DirectConnectionServerPort": 7777,
         "IsPasswordProtected": false,
         "Password": "",
         "ServerName": "My Windrose Server",
         "WorldIslandId": "...",
         "MaxPlayerCount": 10,
-        "P2pProxyAddress": "127.0.0.1"
+        "P2pProxyAddress": "127.0.0.1",
+        "DirectConnectionProxyAddress": "0.0.0.0",
+        "UseDirectConnection": false,
+        "DirectConnectionServerPort": 7777,
+        "UserSelectedRegion": "EU",
+        "DirectConnectionServerAddress": ""
     }
 }
 ```

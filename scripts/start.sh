@@ -59,14 +59,22 @@ fi
 if [ "${GENERATE_SETTINGS:-true}" != "false" ]; then
     LogAction "Patching server config"
     tr -d '\r' < "$SERVER_DESC" | jq \
-        --arg proxy      "${P2P_PROXY_ADDRESS:-127.0.0.1}" \
-        --arg invite     "${INVITE_CODE}" \
-        --arg name       "${SERVER_NAME}" \
-        --arg password   "${SERVER_PASSWORD:-}" \
-        --argjson maxplayers "${MAX_PLAYERS:-10}" \
+        --arg proxy            "${P2P_PROXY_ADDRESS:-127.0.0.1}" \
+        --arg invite           "${INVITE_CODE}" \
+        --argjson directconn   "${USE_DIRECT_CONNECTION:-false}" \
+        --argjson serverport   "${SERVER_PORT:-7777}" \
+        --arg dcproxy          "${DIRECT_CONNECTION_PROXY_ADDRESS:-0.0.0.0}" \
+        --arg region           "${USER_SELECTED_REGION:-EU}" \
+        --arg name             "${SERVER_NAME}" \
+        --arg password         "${SERVER_PASSWORD:-}" \
+        --argjson maxplayers   "${MAX_PLAYERS:-10}" \
         '
         .ServerDescription_Persistent.P2pProxyAddress = $proxy |
-        if $invite   != "" then .ServerDescription_Persistent.InviteCode           = $invite   else . end |
+        if $invite != "" then .ServerDescription_Persistent.InviteCode = $invite else . end |
+        .ServerDescription_Persistent.UseDirectConnection = $directconn |
+        .ServerDescription_Persistent.DirectConnectionServerPort = $serverport |
+        .ServerDescription_Persistent.DirectConnectionProxyAddress = $dcproxy |
+        if $region != "" then .ServerDescription_Persistent.UserSelectedRegion = $region else . end |
         if $name     != "" then .ServerDescription_Persistent.ServerName           = $name     else . end |
         if $password != "" then
             .ServerDescription_Persistent.IsPasswordProtected = true |
