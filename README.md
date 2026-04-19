@@ -124,7 +124,7 @@ Located at `server-files/R5/ServerDescription.json`. This file can only be edite
 |-------|-------------|
 | `InviteCode` | Invite code for players to find your server. Min 6 chars, `0-9 a-z A-Z`, case sensitive |
 | `UseDirectConnection` | `true` if using direct connection via IP, or `false` if using invite code |
-| `DirectConnectionServerPort` | Invite code for players to find your server. Min 6 chars, `0-9 a-z A-Z`, case sensitive |
+| `DirectConnectionServerPort` | Port when direct connection is enabled. Default is `7777` |
 | `IsPasswordProtected` | `true` or `false` |
 | `Password` | Server password |
 | `ServerName` | Display name of the server |
