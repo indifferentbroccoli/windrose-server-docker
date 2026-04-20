@@ -64,7 +64,7 @@ docker run -d \
 | `PGID` | `1000` | Group ID to run the server process as |
 | `UPDATE_ON_START` | `true` | Download and validate server files on every startup. Set to `false` to skip. |
 | `USE_DIRECT_CONNECTION` | `false` | Set to `true` to connect to your server via IP and port instead of invite code. |
-| `SERVER_PORT` | `7777` | Only applies if `USE_DIRECT_CONNECTION=true`. Port for direct connection (TCP and UDP). |
+| `SERVER_PORT` | `7777` | Only applies if `USE_DIRECT_CONNECTION=true`. Port for direct connection. |
 | `DIRECT_CONNECTION_PROXY_ADDRESS` | `0.0.0.0` | Only applies if `USE_DIRECT_CONNECTION=true`. Address for the direct connection proxy. |
 | `USER_SELECTED_REGION` | `EU` | Region for the connection service. Options: `SEA`, `CIS`, `EU` |
 | `INVITE_CODE` | | Invite code players use to connect if `USE_DIRECT_CONNECTION=false` (default). Min 6 characters, `0-9 a-z A-Z`, case sensitive |
@@ -124,7 +124,7 @@ Located at `server-files/R5/ServerDescription.json`. This file can only be edite
 |-------|-------------|
 | `InviteCode` | Invite code for players to find your server. Min 6 chars, `0-9 a-z A-Z`, case sensitive |
 | `UseDirectConnection` | `true` if using direct connection via IP, or `false` (default) if using invite code |
-| `DirectConnectionServerPort` | Port when direct connection is enabled. Default is `7777` (UDP) |
+| `DirectConnectionServerPort` | Port when direct connection is enabled. Default is `7777` |
 | `DirectConnectionServerAddress` | Technical field — should not be changed |
 | `DirectConnectionProxyAddress` | Address for the direct connection proxy. Default is `0.0.0.0` |
 | `UserSelectedRegion` | Region for the connection service. Default is `EU`. Options: `SEA`, `CIS`, `EU` |
