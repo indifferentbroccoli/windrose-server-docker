@@ -9,6 +9,7 @@ services:
     ports:
       - '7777:7777/tcp' # If using direct connection
       - '7777:7777/udp' # If using direct connection
+      - '8780:8780/tcp' # Windrose+ dashboard (only needed if WINDROSE_PLUS_ENABLED=true)
     env_file:
       - .env
     volumes:

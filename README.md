@@ -74,6 +74,51 @@ docker run -d \
 | `P2P_PROXY_ADDRESS` | `127.0.0.1` | IP address the P2P proxy binds to. Use `127.0.0.1` (default) in Docker — the proxy is an internal socket and does not need to be reachable from outside the container |
 | `GENERATE_SETTINGS` | `true` | Set to `false` to skip all config generation and patching. The server will start using whatever is already in `ServerDescription.json` on disk or create a new one. |
 
+## Windrose+ (optional)
+
+[Windrose+](https://github.com/humangenome/WindrosePlus) is a third-party, server-only enhancement for Windrose dedicated servers. It adds a live map, a web RCON dashboard, external server-browser query support, multipliers, 2,400+ INI overrides, and Lua mod support. No client mods are required.
+
+Enable by setting `WINDROSE_PLUS_ENABLED=true` in your `.env`, then start the container. The dashboard is exposed on port `8780`.
+
+### Upgrading / downgrading
+
+The image ships with a default Windrose+ version. To use a different version, set `WINDROSE_PLUS_VERSION=vX.Y.Z` (must match a [GitHub release tag](https://github.com/humangenome/WindrosePlus/releases)) and restart the container. Leave `WINDROSE_PLUS_VERSION` empty to use the image's default.
+
+### Config changes
+
+Edit `server-files/windrose_plus.json` (multipliers, feature flags) or any `server-files/windrose_plus*.ini` (advanced stat overrides), then restart the container — the config takes effect on the next boot. Restarts without config changes cost no extra startup time.
+
+RCON password, admin Steam IDs, and feature flags are re-read live from `windrose_plus.json` while the server is running — no restart required for those.
+
+### Windrose+ environment variables
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `WINDROSE_PLUS_ENABLED` | `false` | Set to `true` to enable the addon. |
+| `WINDROSE_PLUS_VERSION` | baked-in default | GitHub release tag of Windrose+ to install. Leave empty for the image default. |
+| `WINDROSE_PLUS_DASHBOARD_PORT` | `8780` | Port the web dashboard listens on inside the container. |
+| `WINDROSE_PLUS_RCON_PASSWORD` | (empty → random) | Dashboard login password. Only applied when `windrose_plus.json` does not exist yet. |
+
+### Ports
+
+When `WINDROSE_PLUS_ENABLED=true`, expose the dashboard port (already in the provided `docker-compose.yml`):
+
+```yaml
+ports:
+  - '7777:7777/tcp'
+  - '7777:7777/udp'
+  - '8780:8780/tcp'
+```
+
+### Lua mods
+
+Windrose+ supports custom Lua mods that hot-reload on file change. Drop a mod folder (with `mod.json` and `init.lua`) into `server-files/windrose_plus_mods/` on the host — it'll load on the next restart and hot-reload on subsequent file changes. See the [upstream scripting guide](https://github.com/humangenome/WindrosePlus/blob/main/docs/scripting-guide.md) for the API reference.
+
+### Caveats
+
+- The container needs outbound network access when installing or upgrading Windrose+.
+- Changing `WINDROSE_PLUS_VERSION` triggers a reinstall on the next container start; user-added Lua mods and existing `windrose_plus.json` / `windrose_plus*.ini` edits are preserved.
+
 ## Server Configuration
 
 On first start the server automatically generates two configuration files inside `server-files/`. The container handles this automatically — it starts the server once to generate the files, applies your settings, then starts normally.
