@@ -51,6 +51,14 @@ fi
 mkdir -p "$SERVER_FILES/R5/Binaries/Win64" "$SERVER_FILES/R5/Content/Paks"
 unzip -qo "$RELEASE_ZIP" -d "$SERVER_FILES"
 
+# --- Strip third-party hosting branding from dashboard HTML ---
+find "$SERVER_FILES" -name '*.html' -type f | while IFS= read -r f; do
+    if grep -q 'survivalservers.com' "$f"; then
+        n=$(grep -n 'survivalservers.com' "$f" | cut -d: -f1)
+        sed -i "$((n-1)),$((n+1))d" "$f"
+    fi
+done
+
 # --- Rewrite Windows-style path separators in all upstream .ps1 files ---
 # WindrosePlus's scripts use literal `\` in file path strings, which is valid
 # on Windows (Join-Path normalises) but fails on Linux pwsh where `\` is just
