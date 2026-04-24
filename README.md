@@ -74,9 +74,20 @@ docker run -d \
 | `P2P_PROXY_ADDRESS` | `127.0.0.1` | IP address the P2P proxy binds to. Use `127.0.0.1` (default) in Docker — the proxy is an internal socket and does not need to be reachable from outside the container |
 | `GENERATE_SETTINGS` | `true` | Set to `false` to skip all config generation and patching. The server will start using whatever is already in `ServerDescription.json` on disk or create a new one. |
 
+## UE4SS (optional)
+
+[UE4SS](https://github.com/UE4SS-RE/RE-UE4SS) is a Lua scripting and modding framework for Unreal Engine games.
+
+> [!NOTE]
+> `UE4SS_ENABLED` is not needed if `WINDROSE_PLUS_ENABLED=true` — Windrose+ installs and manages its own compatible UE4SS version automatically.
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `UE4SS_ENABLED` | `false` | Set to `true` to install UE4SS standalone. Automatically enabled by Windrose+. |
+
 ## Windrose+ (optional)
 
-[Windrose+](https://github.com/humangenome/WindrosePlus) is a third-party, server-only enhancement for Windrose dedicated servers. It adds a live map, a web RCON dashboard, external server-browser query support, multipliers, 2,400+ INI overrides, and Lua mod support. No client mods are required.
+[Windrose+](https://github.com/humangenome/WindrosePlus) is a third-party, server-only enhancement for Windrose dedicated servers. It adds a live map, a web RCON dashboard, external server-browser query support, multipliers, 2,400+ INI overrides, and Lua mod support. No client mods are required. Enabling Windrose+ automatically installs UE4SS.
 
 Enable by setting `WINDROSE_PLUS_ENABLED=true` in your `.env`, then start the container. The dashboard is exposed on port `8780`.
 
@@ -94,7 +105,7 @@ RCON password, admin Steam IDs, and feature flags are re-read live from `windros
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `WINDROSE_PLUS_ENABLED` | `false` | Set to `true` to enable the addon. |
+| `WINDROSE_PLUS_ENABLED` | `false` | Set to `true` to enable the addon. Automatically enables UE4SS. |
 | `WINDROSE_PLUS_VERSION` | baked-in default | GitHub release tag of Windrose+ to install. Leave empty for the image default. |
 | `WINDROSE_PLUS_DASHBOARD_PORT` | `8780` | Port the web dashboard listens on inside the container. |
 | `WINDROSE_PLUS_RCON_PASSWORD` | (empty → random) | Dashboard login password. Only applied when `windrose_plus.json` does not exist yet. |
