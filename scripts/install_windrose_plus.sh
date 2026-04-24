@@ -104,6 +104,26 @@ SHIM
     chmod +x "$shim"
 done
 
+# --- Wine-shim windrose-heal.exe (dashboard /repair endpoint) ---
+# Upstream ships a prebuilt Windows Rust binary with no Linux equivalent
+# release. Rather than adding a Rust toolchain to the image to compile it
+# (rocksdb pulls in a heavy C++ build), route it through the wine that's
+# already installed for the game server. The tool is a headless CLI and
+# wine handles Unix path args transparently.
+HEAL_EXE="$SERVER_FILES/windrose_plus/tools/windrose-heal/windrose-heal.exe"
+if [ -f "$HEAL_EXE" ]; then
+    HEAL_REAL="${HEAL_EXE}.real"
+    if ! head -c 2 "$HEAL_EXE" 2>/dev/null | grep -q '^#!'; then
+        mv -f "$HEAL_EXE" "$HEAL_REAL"
+    fi
+    cat > "$HEAL_EXE" <<'SHIM'
+#!/bin/bash
+export WINEDEBUG="${WINEDEBUG:--all}"
+exec wine "$(dirname "$0")/windrose-heal.exe.real" "$@"
+SHIM
+    chmod +x "$HEAL_EXE"
+fi
+
 # --- Seed windrose_plus.json on first run ---
 CFG="$SERVER_FILES/windrose_plus.json"
 if [ ! -f "$CFG" ]; then
