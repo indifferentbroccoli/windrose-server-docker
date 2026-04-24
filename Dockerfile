@@ -9,6 +9,7 @@ RUN dpkg --add-architecture i386 && \
     ca-certificates \
     gnupg \
     unzip \
+    xz-utils \
     procps \
     libicu-dev \
     gettext-base \
@@ -23,6 +24,35 @@ RUN dpkg --add-architecture i386 && \
     && apt-get install -y --install-recommends winehq-stable \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
+
+# Install PowerShell 7 (pwsh) — used by WindrosePlus scripts natively on Linux
+RUN curl -fsSL https://packages.microsoft.com/config/debian/12/packages-microsoft-prod.deb \
+        -o /tmp/packages-microsoft-prod.deb && \
+    dpkg -i /tmp/packages-microsoft-prod.deb && \
+    rm /tmp/packages-microsoft-prod.deb && \
+    apt-get update && \
+    apt-get install -y --no-install-recommends powershell && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
+# Install Linux-native repak and retoc (replace WindrosePlus bundled .exe tools)
+ARG REPAK_VERSION=v0.2.3
+ARG RETOC_VERSION=v0.1.5
+RUN set -eux; \
+    curl -fsSL "https://github.com/trumank/repak/releases/download/${REPAK_VERSION}/repak_cli-x86_64-unknown-linux-gnu.tar.xz" \
+         -o /tmp/repak.tar.xz && \
+    tar -xJf /tmp/repak.tar.xz -C /tmp && \
+    install -m 0755 "$(find /tmp -maxdepth 3 -type f -name repak | head -1)" /usr/local/bin/repak && \
+    rm -rf /tmp/repak.tar.xz /tmp/repak_cli-* ; \
+    curl -fsSL "https://github.com/trumank/retoc/releases/download/${RETOC_VERSION}/retoc_cli-x86_64-unknown-linux-gnu.tar.xz" \
+         -o /tmp/retoc.tar.xz && \
+    tar -xJf /tmp/retoc.tar.xz -C /tmp && \
+    install -m 0755 "$(find /tmp -maxdepth 3 -type f -name retoc | head -1)" /usr/local/bin/retoc && \
+    rm -rf /tmp/retoc.tar.xz /tmp/retoc_cli-*
+
+# Default Windrose+ version — can be overridden at runtime via WINDROSE_PLUS_VERSION
+ARG WINDROSE_PLUS_VERSION_DEFAULT=v1.0.14
+ENV WINDROSE_PLUS_VERSION_DEFAULT=${WINDROSE_PLUS_VERSION_DEFAULT}
 
 # Install .NET 8 runtime (required for DepotDownloader)
 RUN curl -sL https://dot.net/v1/dotnet-install.sh -o /tmp/dotnet-install.sh && \
@@ -46,7 +76,7 @@ RUN useradd -m -s /bin/bash steam
 # Init Wine prefix
 ENV WINEPREFIX=/home/steam/.wine \
     WINEARCH=win64 \
-    WINEDLLOVERRIDES="mscoree,mshtml=" \
+    WINEDLLOVERRIDES="mscoree,mshtml=;dwmapi=n,b" \
     DISPLAY=:0
 RUN Xvfb :0 -screen 0 1024x768x16 & \
     sleep 2 && \
@@ -61,6 +91,11 @@ COPY branding /branding
 
 RUN mkdir -p /home/steam/server-files && \
     chmod +x /home/steam/server/*.sh
+
+# Persist user data: game files, Windrose+ config, and Lua mods all live under
+# this single volume. The installer symlinks the deep UE4SS-mandated Mods path
+# to server-files/windrose_plus_mods/ so users only interact with one mount.
+VOLUME ["/home/steam/server-files"]
 
 WORKDIR /home/steam/server
 

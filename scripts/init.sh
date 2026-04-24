@@ -22,6 +22,20 @@ else
     LogWarn "UPDATE_ON_START is set to false, skipping server update"
 fi
 
+if [ "${UE4SS_ENABLED:-false}" = "true" ] && [ "${WINDROSE_PLUS_ENABLED:-false}" != "true" ]; then
+    LogAction "Installing/updating UE4SS"
+    SERVER_FILES=/home/steam/server-files /home/steam/server/install_ue4ss.sh
+fi
+
+if [ "${WINDROSE_PLUS_ENABLED:-false}" = "true" ]; then
+    LogAction "Installing/updating Windrose+"
+    export WINDROSE_PLUS_VERSION="${WINDROSE_PLUS_VERSION:-$WINDROSE_PLUS_VERSION_DEFAULT}"
+    export WINDROSE_PLUS_RCON_PASSWORD="${WINDROSE_PLUS_RCON_PASSWORD:-}"
+    SERVER_FILES=/home/steam/server-files /home/steam/server/install_windrose_plus.sh
+else
+    LogInfo "Windrose+ disabled (set WINDROSE_PLUS_ENABLED=true to enable)"
+fi
+
 chown -R steam:steam /home/steam/server-files
 
 # shellcheck disable=SC2317
@@ -49,9 +63,14 @@ export SERVER_PASSWORD="${SERVER_PASSWORD:-}"
 export MAX_PLAYERS="${MAX_PLAYERS:-10}"
 export P2P_PROXY_ADDRESS="${P2P_PROXY_ADDRESS:-}"
 export GENERATE_SETTINGS="${GENERATE_SETTINGS:-true}"
+export UE4SS_ENABLED="${UE4SS_ENABLED:-false}"
+export WINDROSE_PLUS_ENABLED="${WINDROSE_PLUS_ENABLED:-false}"
+export WINDROSE_PLUS_VERSION="${WINDROSE_PLUS_VERSION:-$WINDROSE_PLUS_VERSION_DEFAULT}"
+export WINDROSE_PLUS_DASHBOARD_PORT="${WINDROSE_PLUS_DASHBOARD_PORT:-8780}"
+export WINDROSE_PLUS_RCON_PASSWORD="${WINDROSE_PLUS_RCON_PASSWORD:-}"
 
 # Start the server as steam user
-su - steam -w "INVITE_CODE,USE_DIRECT_CONNECTION,SERVER_PORT,DIRECT_CONNECTION_PROXY_ADDRESS,USER_SELECTED_REGION,SERVER_NAME,SERVER_PASSWORD,MAX_PLAYERS,P2P_PROXY_ADDRESS,GENERATE_SETTINGS" \
+su - steam -w "INVITE_CODE,USE_DIRECT_CONNECTION,SERVER_PORT,DIRECT_CONNECTION_PROXY_ADDRESS,USER_SELECTED_REGION,SERVER_NAME,SERVER_PASSWORD,MAX_PLAYERS,P2P_PROXY_ADDRESS,GENERATE_SETTINGS,UE4SS_ENABLED,WINDROSE_PLUS_ENABLED,WINDROSE_PLUS_VERSION,WINDROSE_PLUS_VERSION_DEFAULT,WINDROSE_PLUS_DASHBOARD_PORT,WINDROSE_PLUS_RCON_PASSWORD" \
     -c "cd /home/steam/server && ./start.sh" &
 
 killpid="$!"

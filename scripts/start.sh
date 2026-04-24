@@ -22,7 +22,7 @@ fi
 export WINEPREFIX="${WINEPREFIX:-$HOME/.wine}"
 export WINEARCH="${WINEARCH:-win64}"
 export WINEDEBUG="${WINEDEBUG:-fixme-all}"
-export WINEDLLOVERRIDES="mscoree,mshtml="
+export WINEDLLOVERRIDES="mscoree,mshtml=;dwmapi=n,b"
 
 # First run: start server briefly to generate ServerDescription.json
 if [ "${GENERATE_SETTINGS:-true}" = "false" ]; then
@@ -88,6 +88,15 @@ if [ "${GENERATE_SETTINGS:-true}" != "false" ]; then
     LogSuccess "Server config patched"
 fi
 
+if [ "${WINDROSE_PLUS_ENABLED:-false}" = "true" ]; then
+    LogAction "Rebuilding Windrose+ override PAK"
+    if ! /home/steam/server/build_windrose_plus_pak.sh; then
+        LogError "Windrose+ PAK build failed — aborting server launch"
+        exit 1
+    fi
+    LogSuccess "Windrose+ PAK build complete"
+fi
+
 LogInfo "Server is starting..."
 
 LOG_FILE="$SERVER_FILES/R5/Saved/Logs/R5.log"
@@ -96,5 +105,11 @@ xvfb-run --auto-servernum wine "$SERVER_EXEC" -log >/dev/null 2>&1 &
 wine_pid=$!
 
 tail -F "$LOG_FILE" 2>/dev/null &
+
+if [ "${WINDROSE_PLUS_ENABLED:-false}" = "true" ]; then
+    LogInfo "Starting Windrose+ dashboard on port ${WINDROSE_PLUS_DASHBOARD_PORT:-8780}"
+    /home/steam/server/start_windrose_plus_dashboard.sh &
+    LogInfo "Dashboard pid: $!"
+fi
 
 wait $wine_pid
