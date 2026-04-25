@@ -147,5 +147,14 @@ if [ ! -f "$CFG" ]; then
     chown steam:steam "$CFG" 2>/dev/null || true
 fi
 
+# --- Patch HeightmapExporter for Wine compatibility ---
+# The DLL validates pointers against native-Windows address ranges that don't
+# apply under Wine.  This is idempotent and safe to skip on failure.
+HME_DLL="$SERVER_FILES/R5/Binaries/Win64/ue4ss/Mods/HeightmapExporter/dlls/main.dll"
+PATCH_SCRIPT="$(dirname "$0")/patch_heightmap_exporter.sh"
+if [ -f "$HME_DLL" ] && [ -x "$PATCH_SCRIPT" ]; then
+    "$PATCH_SCRIPT" "$HME_DLL" || echo "WARNING: HeightmapExporter Wine patch failed (non-fatal)" >&2
+fi
+
 echo "$WINDROSE_PLUS_VERSION" > "$MARKER"
 chown steam:steam "$MARKER" 2>/dev/null || true
