@@ -93,7 +93,7 @@ Enable by setting `WINDROSE_PLUS_ENABLED=true` in your `.env`, then start the co
 
 ### Upgrading / downgrading
 
-The image ships with a default Windrose+ version. To use a different version, set `WINDROSE_PLUS_VERSION=vX.Y.Z` (must match a [GitHub release tag](https://github.com/humangenome/WindrosePlus/releases)) and restart the container. Leave `WINDROSE_PLUS_VERSION` empty to use the image's default.
+The image ships with the latest Windrose+ version. To use a different version, set `WINDROSE_PLUS_VERSION=vX.Y.Z` (must match a [GitHub release tag](https://github.com/humangenome/WindrosePlus/releases)) and restart the container. Leave `WINDROSE_PLUS_VERSION` empty to use the latest release.
 
 ### Config changes
 

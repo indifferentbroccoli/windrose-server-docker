@@ -28,6 +28,10 @@ if [ -z "$WINDROSE_PLUS_VERSION" ]; then
     exit 1
 fi
 
+if [ "$WINDROSE_PLUS_VERSION" = "latest" ]; then
+    WINDROSE_PLUS_VERSION=$(curl -sL "https://api.github.com/repos/humangenome/WindrosePlus/releases/latest" | jq -r '.tag_name')
+fi
+
 MARKER="$SERVER_FILES/.windroseplus_version"
 if [ -f "$MARKER" ] && [ "$(cat "$MARKER")" = "$WINDROSE_PLUS_VERSION" ]; then
     exit 0

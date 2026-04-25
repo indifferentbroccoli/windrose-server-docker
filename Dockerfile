@@ -51,7 +51,7 @@ RUN set -eux; \
     rm -rf /tmp/retoc.tar.xz /tmp/retoc_cli-*
 
 # Default Windrose+ version — can be overridden at runtime via WINDROSE_PLUS_VERSION
-ARG WINDROSE_PLUS_VERSION_DEFAULT=v1.0.14
+ARG WINDROSE_PLUS_VERSION_DEFAULT=latest
 ENV WINDROSE_PLUS_VERSION_DEFAULT=${WINDROSE_PLUS_VERSION_DEFAULT}
 
 # Install .NET 8 runtime (required for DepotDownloader)
