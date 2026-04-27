@@ -41,11 +41,8 @@ chown -R steam:steam /home/steam/server-files
 # shellcheck disable=SC2317
 term_handler() {
     if ! shutdown_server; then
-        local pid
-        pid=$(pgrep -f "wineserver64" | head -1)
-        if [ -n "$pid" ]; then
-            kill -SIGTERM "$pid"
-        fi
+        LogWarn "Server did not shutdown gracefully, forcing shutdown"
+        wineserver -k 2>/dev/null || true
     fi
     sleep 2
     tail --pid="$killpid" -f 2>/dev/null
