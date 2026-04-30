@@ -7,6 +7,7 @@ SERVER_FILES="/home/steam/server-files"
 cd "$SERVER_FILES" || exit
 
 LogAction "Starting Windrose Dedicated Server"
+LogInfo "Container architecture: $(uname -m)"
 
 SERVER_DESC="$SERVER_FILES/R5/ServerDescription.json"
 

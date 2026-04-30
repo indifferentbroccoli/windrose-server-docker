@@ -13,6 +13,16 @@ Game server hosting · Fast RAM · High-speed internet · Eat lag for breakfast
 
 A Docker container for running a Windrose dedicated server. The server binary is Windows-only and runs via Wine.
 
+## ARM64 support
+
+This repository supports both `linux/amd64` and `linux/arm64` images.
+
+- On `amd64`, the container uses the existing WineHQ-based path.
+- On `arm64`, the container uses [Hangover](https://github.com/AndreRH/hangover) to run the same Windows dedicated-server binary on ARM Linux.
+- Windrose+ helper tools are built for the target architecture during the Docker build, and PowerShell is installed on `arm64` from the official PowerShell release tarball because Microsoft does not publish a Debian 12 `arm64` apt package.
+
+This is still a compatibility path, not a native ARM server build. Expect lower performance on `arm64` than on an equivalent `amd64` host.
+
 ## Server Requirements
 
 | | 2 Players | 4 Players | 10 Players |
@@ -42,6 +52,20 @@ services:
 
 ```shell
 docker compose up -d
+```
+
+### Build locally
+
+To build for the current machine architecture:
+
+```shell
+docker build -t windrose-server-docker .
+```
+
+To build an ARM64 image explicitly with Buildx:
+
+```shell
+docker buildx build --load --platform linux/arm64 -t windrose-server-docker:arm64 .
 ```
 
 ### Docker Run
@@ -296,6 +320,12 @@ Located at `server-files/R5/Saved/SaveProfiles/Default/RocksDB/<version>/Worlds/
 If you are hosting this server inside a Proxmox VM or LXC container, set the CPU type to **host**.
 
 Proxmox's default CPU types (e.g. `kvm64`) omit instruction sets that Wine and the server binary may depend on. This can cause the server to fail to start, crash at runtime, or fail silently with no useful output.
+
+## Implementation notes
+
+- `arm64` support relies on Hangover's ARM64 Wine compatibility layer for the Windows server executable.
+- The upstream dedicated server is still downloaded from Steam as the original Windows build.
+- Image publishing workflows now build both `linux/amd64` and `linux/arm64`.
 
 ## About
 
