@@ -59,7 +59,7 @@ shutdown_server() {
   LogAction "Attempting graceful server shutdown"
 
   local pid
-  pid=$(pgrep -f "wineserver64" | head -1)
+  pid=$(pgrep -x "wineserver" | head -1)
 
   if [ -n "$pid" ]; then
     kill -SIGTERM "$pid"
