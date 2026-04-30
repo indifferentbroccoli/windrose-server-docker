@@ -21,8 +21,13 @@ fi
 
 export WINEPREFIX="${WINEPREFIX:-$HOME/.wine}"
 export WINEARCH="${WINEARCH:-win64}"
-export WINEDEBUG="${WINEDEBUG:-fixme-all}"
 export WINEDLLOVERRIDES="mscoree,mshtml=;dwmapi=n,b"
+
+if [ "${WINE_VERBOSE:-false}" = "true" ]; then
+    export WINEDEBUG="${WINEDEBUG:-+all}"
+else
+    export WINEDEBUG="${WINEDEBUG:-fixme-all}"
+fi
 
 # First run: start server briefly to generate ServerDescription.json
 if [ "${GENERATE_SETTINGS:-true}" = "false" ]; then
@@ -31,7 +36,7 @@ elif [ ! -f "$SERVER_DESC" ]; then
     LogAction "First boot detected - ServerDescription.json not found"
     LogInfo "Starting server temporarily to generate default config files..."
 
-    xvfb-run --auto-servernum wine "$SERVER_EXEC" -log -STDOUT >/dev/null 2>&1 &
+    xvfb-run --auto-servernum wine "$SERVER_EXEC" -log -STDOUT &
     firstrun_pid=$!
 
     count=0
@@ -101,7 +106,11 @@ LogInfo "Server is starting..."
 
 LOG_FILE="$SERVER_FILES/R5/Saved/Logs/R5.log"
 
-xvfb-run --auto-servernum wine "$SERVER_EXEC" -log >/dev/null 2>&1 &
+if [ "${WINE_VERBOSE:-false}" = "true" ]; then
+    xvfb-run --auto-servernum wine "$SERVER_EXEC" -log &
+else
+    xvfb-run --auto-servernum wine "$SERVER_EXEC" -log >/dev/null 2>&1 &
+fi
 wine_pid=$!
 
 tail -F "$LOG_FILE" 2>/dev/null &

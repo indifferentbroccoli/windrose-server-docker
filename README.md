@@ -73,6 +73,7 @@ docker run -d \
 | `MAX_PLAYERS` | `10` | Maximum number of simultaneous players |
 | `P2P_PROXY_ADDRESS` | `127.0.0.1` | IP address the P2P proxy binds to. Use `127.0.0.1` (default) in Docker — the proxy is an internal socket and does not need to be reachable from outside the container |
 | `GENERATE_SETTINGS` | `true` | Set to `false` to skip all config generation and patching. The server will start using whatever is already in `ServerDescription.json` on disk or create a new one. |
+| `WINE_VERBOSE` | `false` | Set to `true` to enable verbose Wine logging. Useful for diagnosing Wine crashes. Enables `WINEDEBUG=+all` and surfaces Wine output directly in the container logs. |
 
 ## UE4SS (optional)
 
