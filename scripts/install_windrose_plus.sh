@@ -7,6 +7,13 @@
 #   WINDROSE_PLUS_ENABLED            (default false) — gate
 #   WINDROSE_PLUS_VERSION            (default $WINDROSE_PLUS_VERSION_DEFAULT)
 #   WINDROSE_PLUS_VERSION_DEFAULT    (set by the Docker image)
+#   WINDROSE_PLUS_URL                (optional) — custom download URL for the
+#                                    release zip. Skips the GitHub release lookup.
+#                                    WINDROSE_PLUS_VERSION is still used as the
+#                                    install marker, so bump it to force a re-pull.
+#   WINDROSE_PLUS_AUTOUPDATE         (default true) — when false, skip the install
+#                                    step entirely once a version is on disk. The
+#                                    server still loads whatever is already there.
 #   WINDROSE_PLUS_RCON_PASSWORD      (optional) — seeds windrose_plus.json on first run
 #   SERVER_FILES                     (default /home/steam/server-files)
 #
@@ -18,6 +25,8 @@ set -euo pipefail
 : "${SERVER_FILES:=/home/steam/server-files}"
 : "${WINDROSE_PLUS_VERSION_DEFAULT:=}"
 : "${WINDROSE_PLUS_VERSION:=$WINDROSE_PLUS_VERSION_DEFAULT}"
+: "${WINDROSE_PLUS_URL:=}"
+: "${WINDROSE_PLUS_AUTOUPDATE:=true}"
 
 if [ "$WINDROSE_PLUS_ENABLED" != "true" ]; then
     exit 0
@@ -28,7 +37,9 @@ if [ -z "$WINDROSE_PLUS_VERSION" ]; then
     exit 1
 fi
 
-if [ "$WINDROSE_PLUS_VERSION" = "latest" ]; then
+# Resolve "latest" via the GitHub API only when no custom URL is set — with a
+# custom URL the version string is just an opaque marker label.
+if [ -z "$WINDROSE_PLUS_URL" ] && [ "$WINDROSE_PLUS_VERSION" = "latest" ]; then
     WINDROSE_PLUS_VERSION=$(curl -fsSL "https://api.github.com/repos/humangenome/WindrosePlus/releases/latest" | jq -r '.tag_name')
 fi
 
@@ -43,6 +54,13 @@ if [ -n "${WINDROSE_PLUS_RCON_PASSWORD:-}" ] && [ -f "$CFG" ]; then
     chown steam:steam "$CFG" 2>/dev/null || true
 fi
 
+# Autoupdate disabled: keep whatever is on disk once a marker exists. First-run
+# installs still proceed so the server has something to load.
+if [ "$WINDROSE_PLUS_AUTOUPDATE" != "true" ] && [ -f "$MARKER" ]; then
+    echo "install_windrose_plus: WINDROSE_PLUS_AUTOUPDATE=false — keeping installed version $(cat "$MARKER")"
+    exit 0
+fi
+
 if [ -f "$MARKER" ] && [ "$(cat "$MARKER")" = "$WINDROSE_PLUS_VERSION" ]; then
     exit 0
 fi
@@ -54,6 +72,9 @@ trap 'rm -rf "$TMPDIR"' EXIT
 RELEASE_ZIP=""
 if [ -n "${WINDROSE_PLUS_ZIP_OVERRIDE:-}" ]; then
     RELEASE_ZIP="$WINDROSE_PLUS_ZIP_OVERRIDE"
+elif [ -n "$WINDROSE_PLUS_URL" ]; then
+    RELEASE_ZIP="$TMPDIR/WindrosePlus.zip"
+    curl -fsSL "$WINDROSE_PLUS_URL" -o "$RELEASE_ZIP"
 else
     RELEASE_ZIP="$TMPDIR/WindrosePlus.zip"
     curl -fsSL \
