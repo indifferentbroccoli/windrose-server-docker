@@ -33,14 +33,16 @@ if [ "$WINDROSE_PLUS_ENABLED" != "true" ]; then
 fi
 
 if [ -z "$WINDROSE_PLUS_VERSION" ]; then
-    echo "install_windrose_plus: WINDROSE_PLUS_VERSION is empty and no default is set" >&2
+    echo "install_windrose_plus: WINDROSE_PLUS_VERSION must be set — it's used as the install marker even when WINDROSE_PLUS_URL is provided" >&2
     exit 1
 fi
 
 # Resolve "latest" via the GitHub API only when no custom URL is set — with a
-# custom URL the version string is just an opaque marker label.
+# custom URL the version string is treated as a rolling-release marker (always
+# reinstall, see below).
 if [ -z "$WINDROSE_PLUS_URL" ] && [ "$WINDROSE_PLUS_VERSION" = "latest" ]; then
-    WINDROSE_PLUS_VERSION=$(curl -fsSL "https://api.github.com/repos/humangenome/WindrosePlus/releases/latest" | jq -r '.tag_name')
+    WINDROSE_PLUS_VERSION=$(curl -fsSL --proto =https,http --max-time 180 \
+        "https://api.github.com/repos/humangenome/WindrosePlus/releases/latest" | jq -r '.tag_name')
 fi
 
 MARKER="$SERVER_FILES/.windroseplus_version"
@@ -61,7 +63,12 @@ if [ "$WINDROSE_PLUS_AUTOUPDATE" != "true" ] && [ -f "$MARKER" ]; then
     exit 0
 fi
 
-if [ -f "$MARKER" ] && [ "$(cat "$MARKER")" = "$WINDROSE_PLUS_VERSION" ]; then
+# Custom URL with VERSION=latest is treated as a rolling release: always
+# reinstall (subject to AUTOUPDATE above) so each boot pulls a fresh zip.
+# Otherwise the marker pins to the previous version string.
+if [ -n "$WINDROSE_PLUS_URL" ] && [ "$WINDROSE_PLUS_VERSION" = "latest" ]; then
+    : # rolling — fall through to install
+elif [ -f "$MARKER" ] && [ "$(cat "$MARKER")" = "$WINDROSE_PLUS_VERSION" ]; then
     exit 0
 fi
 
@@ -74,10 +81,10 @@ if [ -n "${WINDROSE_PLUS_ZIP_OVERRIDE:-}" ]; then
     RELEASE_ZIP="$WINDROSE_PLUS_ZIP_OVERRIDE"
 elif [ -n "$WINDROSE_PLUS_URL" ]; then
     RELEASE_ZIP="$TMPDIR/WindrosePlus.zip"
-    curl -fsSL "$WINDROSE_PLUS_URL" -o "$RELEASE_ZIP"
+    curl -fsSL --proto =https,http --max-time 180 "$WINDROSE_PLUS_URL" -o "$RELEASE_ZIP"
 else
     RELEASE_ZIP="$TMPDIR/WindrosePlus.zip"
-    curl -fsSL \
+    curl -fsSL --proto =https,http --max-time 180 \
         "https://github.com/humangenome/WindrosePlus/releases/download/${WINDROSE_PLUS_VERSION}/WindrosePlus.zip" \
         -o "$RELEASE_ZIP"
 fi
