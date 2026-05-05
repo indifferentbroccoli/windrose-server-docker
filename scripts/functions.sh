@@ -36,7 +36,11 @@ Log() {
   local color="$2"
   local prefix="$3"
   local suffix="$4"
-  printf "$color%s$RESET$LINE" "$prefix$message$suffix"
+
+  local src
+  src=$(basename "${BASH_SOURCE[-1]}")
+
+  printf "$color%s$RESET$LINE" "[$src] $prefix$message$suffix"
 }
 
 install() {
@@ -55,31 +59,28 @@ install() {
 # Returns 0 if it is shutdown
 # Returns 1 if it is not able to be shutdown
 shutdown_server() {
-  local return_val=0
   LogAction "Attempting graceful server shutdown"
 
   local pid
   pid=$(pgrep -x "wineserver" | head -1)
-
-  if [ -n "$pid" ]; then
-    kill -SIGTERM "$pid"
-
-    local count=0
-    while [ $count -lt 30 ] && kill -0 "$pid" 2>/dev/null; do
-      sleep 1
-      count=$((count + 1))
-    done
-
-    if kill -0 "$pid" 2>/dev/null; then
-      LogWarn "Server did not shutdown gracefully, forcing shutdown"
-      return_val=1
-    else
-      LogSuccess "Server shutdown gracefully"
-    fi
-  else
-    LogWarn "Server process not found"
-    return_val=1
+  if [ -z "$pid" ]; then
+    LogWarn "Server process is not running"
+    return 1
   fi
 
-  return "$return_val"
+  # wineserver -k sends SIGINT (triggers shutdown_master_socket()), then SIGKILL,
+  # if needed, and returns once wineserver has exited.
+  # Must run as the user that owns the wineprefix, so wineserver can find the socket.
+  if ! su steam -c 'WINEPREFIX=/home/steam/.wine wineserver -k' > /dev/null 2>&1; then
+    LogWarn "wineserver -k returned non-zero"
+  fi
+
+  # Sanity check, wineserver should not be alive at this point due to wineserver -k.
+  if kill -0 "$pid" 2>/dev/null; then
+    LogWarn "wineserver still present after -k"
+    return 1
+  fi
+
+  LogSuccess "Server shutdown gracefully"
+  return 0
 }

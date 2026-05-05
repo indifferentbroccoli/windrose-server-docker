@@ -42,10 +42,10 @@ chown -R steam:steam /home/steam/server-files
 term_handler() {
     if ! shutdown_server; then
         LogWarn "Server did not shutdown gracefully, forcing shutdown"
-        wineserver -k 2>/dev/null || true
+        su steam -c 'WINEPREFIX=/home/steam/.wine wineserver -k9' >/dev/null 2>&1 || true
     fi
     sleep 2
-    tail --pid="$killpid" -f 2>/dev/null
+    tail --pid="$killpid" -f /dev/null 2>/dev/null
 }
 
 trap 'term_handler' SIGTERM
