@@ -43,6 +43,8 @@ term_handler() {
     if ! shutdown_server; then
         LogWarn "Server did not shutdown gracefully, forcing shutdown"
         su steam -c 'WINEPREFIX=/home/steam/.wine wineserver -k9' >/dev/null 2>&1 || true
+        # Anything belonging to steam is part of a dead wine session.
+        pkill -9 -u steam 2>/dev/null || true
     fi
     sleep 2
     tail --pid="$killpid" -f /dev/null 2>/dev/null
