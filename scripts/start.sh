@@ -63,34 +63,49 @@ fi
 
 if [ "${GENERATE_SETTINGS:-true}" != "false" ]; then
     LogAction "Patching server config"
-    tr -d '\r' < "$SERVER_DESC" | jq \
-        --arg proxy            "${P2P_PROXY_ADDRESS:-127.0.0.1}" \
-        --arg invite           "${INVITE_CODE}" \
-        --argjson directconn   "${USE_DIRECT_CONNECTION:-false}" \
-        --argjson serverport   "${SERVER_PORT:-7777}" \
-        --arg dcproxy          "${DIRECT_CONNECTION_PROXY_ADDRESS:-0.0.0.0}" \
-        --arg region           "${USER_SELECTED_REGION:-}" \
-        --arg name             "${SERVER_NAME}" \
-        --arg password         "${SERVER_PASSWORD:-}" \
-        --argjson maxplayers   "${MAX_PLAYERS:-10}" \
-        '
-        .ServerDescription_Persistent.P2pProxyAddress = $proxy |
-        if $invite != "" then .ServerDescription_Persistent.InviteCode = $invite else . end |
-        .ServerDescription_Persistent.UseDirectConnection = $directconn |
-        .ServerDescription_Persistent.DirectConnectionServerPort = $serverport |
-        .ServerDescription_Persistent.DirectConnectionProxyAddress = $dcproxy |
-        if $region != "" then .ServerDescription_Persistent.UserSelectedRegion = $region else . end |
-        if $name     != "" then .ServerDescription_Persistent.ServerName           = $name     else . end |
-        if $password != "" then
-            .ServerDescription_Persistent.IsPasswordProtected = true |
-            .ServerDescription_Persistent.Password = $password
-        else
-            .ServerDescription_Persistent.IsPasswordProtected = false |
-            .ServerDescription_Persistent.Password = ""
-        end |
-        .ServerDescription_Persistent.MaxPlayerCount = $maxplayers
-        ' > "${SERVER_DESC}.tmp" && mv "${SERVER_DESC}.tmp" "$SERVER_DESC"
-    LogSuccess "Server config patched"
+
+    # Schema sanity: bail loudly if ServerDescription_Persistent is gone. Upstream
+    # docs warn PersistentServerId / overall structure may shift in future builds;
+    # patching blindly into an unrecognised shape would corrupt the file.
+    if ! tr -d '\r' < "$SERVER_DESC" | jq -e 'has("ServerDescription_Persistent")' >/dev/null 2>&1; then
+        LogError "ServerDescription.json is missing the ServerDescription_Persistent block — schema may have changed."
+        LogError "Skipping patch to avoid corrupting the file. Inspect $SERVER_DESC manually."
+    else
+        tr -d '\r' < "$SERVER_DESC" | jq \
+            --arg proxy            "${P2P_PROXY_ADDRESS:-127.0.0.1}" \
+            --arg invite           "${INVITE_CODE}" \
+            --argjson directconn   "${USE_DIRECT_CONNECTION:-false}" \
+            --argjson serverport   "${SERVER_PORT:-7777}" \
+            --arg dcproxy          "${DIRECT_CONNECTION_PROXY_ADDRESS:-0.0.0.0}" \
+            --arg region           "${USER_SELECTED_REGION:-}" \
+            --arg name             "${SERVER_NAME}" \
+            --arg password         "${SERVER_PASSWORD:-}" \
+            --argjson maxplayers   "${MAX_PLAYERS:-10}" \
+            --arg islandid         "${WORLD_ISLAND_ID:-}" \
+            --argjson autoload     "${AUTO_LOAD_LATEST_BACKUP:-true}" \
+            '
+            .ServerDescription_Persistent.P2pProxyAddress = $proxy |
+            if $invite != "" then .ServerDescription_Persistent.InviteCode = $invite else . end |
+            .ServerDescription_Persistent.UseDirectConnection = $directconn |
+            .ServerDescription_Persistent.DirectConnectionServerPort = $serverport |
+            .ServerDescription_Persistent.DirectConnectionProxyAddress = $dcproxy |
+            if $region != "" then .ServerDescription_Persistent.UserSelectedRegion = $region else . end |
+            if $name     != "" then .ServerDescription_Persistent.ServerName           = $name     else . end |
+            if $password != "" then
+                .ServerDescription_Persistent.IsPasswordProtected = true |
+                .ServerDescription_Persistent.Password = $password
+            else
+                .ServerDescription_Persistent.IsPasswordProtected = false |
+                .ServerDescription_Persistent.Password = ""
+            end |
+            .ServerDescription_Persistent.MaxPlayerCount = $maxplayers |
+            if $islandid != "" then .ServerDescription_Persistent.WorldIslandId = $islandid else . end |
+            .ServerDescription_Persistent.AutoLoadLatestBackupIfHasBroken = $autoload
+            # NOTE: PersistentServerId, DeploymentId are server-managed. Do not patch.
+            # Upstream docs say PersistentServerId may change in upcoming builds — treat as opaque.
+            ' > "${SERVER_DESC}.tmp" && mv "${SERVER_DESC}.tmp" "$SERVER_DESC"
+        LogSuccess "Server config patched"
+    fi
 fi
 
 if [ "${WINDROSE_PLUS_ENABLED:-false}" = "true" ]; then
