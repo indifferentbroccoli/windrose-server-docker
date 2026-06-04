@@ -2,7 +2,6 @@
 services:
   windrose:
     image: indifferentbroccoli/windrose-server-docker
-    platform: linux/amd64
     restart: unless-stopped
     container_name: windrose
     stop_grace_period: 30s
