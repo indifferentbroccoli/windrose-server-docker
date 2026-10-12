@@ -109,6 +109,8 @@ RCON password, admin Steam IDs, and feature flags are re-read live from `windros
 |----------|---------|-------------|
 | `WINDROSE_PLUS_ENABLED` | `false` | Set to `true` to enable the addon. Automatically enables UE4SS. |
 | `WINDROSE_PLUS_VERSION` | baked-in default | GitHub release tag of Windrose+ to install. Leave empty for the image default. |
+| `WINDROSE_PLUS_URL` | | Custom download URL for the Windrose+ release zip. When set, replaces the GitHub release lookup — useful for self-hosted forks or builds. `WINDROSE_PLUS_VERSION` is still used as the install marker, so bump it to force a re-pull. Set `WINDROSE_PLUS_VERSION=latest` together with `WINDROSE_PLUS_URL` to treat the URL as a rolling release (re-pulled on every boot). |
+| `WINDROSE_PLUS_AUTOUPDATE` | `true` | Set to `false` to keep whatever version is currently on disk across restarts. Windrose+ still loads on startup; the install/update step is skipped once a version is installed. |
 | `WINDROSE_PLUS_DASHBOARD_PORT` | `8780` | Port the web dashboard listens on inside the container. |
 | `WINDROSE_PLUS_RCON_PASSWORD` | (empty → random) | Dashboard login password. Only applied when `windrose_plus.json` does not exist yet. |
 

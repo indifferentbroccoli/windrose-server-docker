@@ -31,6 +31,8 @@ if [ "${WINDROSE_PLUS_ENABLED:-false}" = "true" ]; then
     LogAction "Installing/updating Windrose+"
     export WINDROSE_PLUS_VERSION="${WINDROSE_PLUS_VERSION:-$WINDROSE_PLUS_VERSION_DEFAULT}"
     export WINDROSE_PLUS_RCON_PASSWORD="${WINDROSE_PLUS_RCON_PASSWORD:-}"
+    export WINDROSE_PLUS_URL="${WINDROSE_PLUS_URL:-}"
+    export WINDROSE_PLUS_AUTOUPDATE="${WINDROSE_PLUS_AUTOUPDATE:-true}"
     SERVER_FILES=/home/steam/server-files /home/steam/server/install_windrose_plus.sh
 else
     LogInfo "Windrose+ disabled (set WINDROSE_PLUS_ENABLED=true to enable)"
